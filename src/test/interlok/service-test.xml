@@ -1,0 +1,8 @@
+<service-test>
+  <unique-id>service-test</unique-id>
+  <test-client class="embedded-jmx-test-client"/>
+  <helpers/>
+  <test-list>
+    <unique-id>test-list</unique-id>
+  </test-list>
+</service-test>

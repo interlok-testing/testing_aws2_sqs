@@ -1,0 +1,38 @@
+plugins {
+    // https://github.com/nemerosa/versioning
+    id 'net.nemerosa.versioning' version '3.1.0'
+}
+
+ext {
+//    testingCommonGradle = "https://raw.githubusercontent.com/interlok-testing/testing_common/refs/heads/master/common.gradle?timestamp=${new Date().getTime()}"
+    testingCommonGradle = "../testing_common/common.gradle"
+    includeWar='true'
+    restAssuredVersion = "5.5.0"
+    awsSDKVersion = "2.29.9"
+}
+
+configurations.all {
+    resolutionStrategy {
+        cacheChangingModulesFor 0, 'seconds'
+    }
+}
+
+allprojects {
+    apply from: "${testingCommonGradle}"
+    // specify the version of the configuration.
+    version=versioning.info.full
+}
+
+
+dependencies {
+    testImplementation ("com.adaptris:interlok-aws2-sqs:$interlokVersion") { changing=true }
+    testImplementation ("software.amazon.awssdk:sqs:$awsSDKVersion") { changing=true }
+    interlokRuntime ("com.adaptris:interlok-aws2-sqs:$interlokVersion") { changing=true }
+    interlokRuntime ("software.amazon.awssdk:sqs:$awsSDKVersion") { changing=true }
+    testImplementation "io.rest-assured:rest-assured:$restAssuredVersion"
+    testImplementation "io.rest-assured:json-path:$restAssuredVersion"
+}
+
+tasks.named('functionalTest', Test) {
+    workingDir = "$projectDir"
+}

@@ -1,0 +1,17 @@
+# This is actually calling gradle-check reusable workflow as we don't want to publish the artifact'
+name: Gradle Publish
+
+on:
+  push:
+    branches-ignore:
+    - develop
+
+permissions: read-all
+
+jobs:
+  gradle-check:
+    name: Gradle Check
+    uses: interlok-tooling/reusable-workflows/.github/workflows/gradle-check.yml@main
+    secrets:
+      NEXUS_REPO_PASSWORD: ${{ secrets.NEXUS_REPO_PASSWORD }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

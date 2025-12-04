@@ -1,0 +1,34 @@
+version: '{branch}#{build}'
+branches:
+  only:
+  - gradle
+image: Ubuntu1804
+
+init:
+- sh: >-
+    sudo apt-get -y install haveged
+
+    sudo systemctl enable haveged
+
+    sudo systemctl restart haveged
+
+    mkdir -p $HOME/.gradle
+
+    echo "org.gradle.console=plain" >>$HOME/.gradle/gradle.properties
+
+    echo "org.gradle.warning.mode=none" >>$HOME/.gradle/gradle.properties
+
+environment:
+  JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+
+cache:
+- $HOME/.gradle/caches/
+- $HOME/.gradle/wrapper/
+
+build_script:
+- sh: ./gradlew -Dorg.gradle.console=plain -PverboseTests=true check
+
+test: off
+
+# on_success:
+# - sh: bash <(curl -s https://codecov.io/bash)

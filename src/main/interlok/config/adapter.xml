@@ -1,0 +1,145 @@
+<adapter>
+  <unique-id>aws2-sqs-testing</unique-id>
+  <start-up-event-imp>com.adaptris.core.event.StandardAdapterStartUpEvent</start-up-event-imp>
+  <heartbeat-event-imp>com.adaptris.core.HeartbeatEvent</heartbeat-event-imp>
+  <shared-components>
+    <connections>
+        <jetty-http-connection>
+            <unique-id>jetty-conn</unique-id>
+            <port>8081</port>
+            <server-connector-properties/>
+            <http-configuration/>
+        </jetty-http-connection>
+        <aws2-amazon-sqs-connection>
+            <unique-id>aws-sqs-sdk-connection-async</unique-id>
+            <region>${aws2.account.region}</region>
+            <credentials class="aws2-static-credentials-builder">
+                <authentication class="aws2-keys-authentication">
+                    <access-key>test</access-key>
+                    <secret-key>test</secret-key>
+                </authentication>
+            </credentials>
+            <custom-endpoint class="aws2-custom-endpoint">
+                <service-endpoint>http://localstack-1:4566/_aws</service-endpoint>
+                <signing-region>${aws2.account.region}</signing-region>
+            </custom-endpoint>
+            <client-configuration>
+            </client-configuration>
+            <sqs-client-factory class="aws2-async-sqs-client-factory"/>
+        </aws2-amazon-sqs-connection>
+        <aws2-amazon-sqs-connection>
+            <unique-id>aws-sqs-sdk-connection-sync</unique-id>
+            <region>${aws2.account.region}</region>
+            <credentials class="aws2-static-credentials-builder">
+                <authentication class="aws2-keys-authentication">
+                    <access-key>test</access-key>
+                    <secret-key>test</secret-key>
+                </authentication>
+            </credentials>
+            <custom-endpoint class="aws2-custom-endpoint">
+                <service-endpoint>http://localstack-1:4566/_aws</service-endpoint>
+                <signing-region>${aws2.account.region}</signing-region>
+            </custom-endpoint>
+            <client-configuration>
+            </client-configuration>
+            <sqs-client-factory class="aws2-sync-sqs-client-factory"/>
+        </aws2-amazon-sqs-connection>
+    </connections>
+    <services/>
+  </shared-components>
+  <event-handler class="default-event-handler">
+    <unique-id>DefaultEventHandler</unique-id>
+    <connection class="null-connection">
+      <unique-id>agitated-einstein</unique-id>
+    </connection>
+    <producer class="null-message-producer">
+      <unique-id>romantic-bartik</unique-id>
+    </producer>
+  </event-handler>
+  <message-error-handler class="null-processing-exception-handler">
+    <unique-id>silly-dijkstra</unique-id>
+  </message-error-handler>
+  <failed-message-retrier class="no-retries">
+    <unique-id>jolly-ptolemy</unique-id>
+  </failed-message-retrier>
+  <channel-list>
+    <channel>
+      <consume-connection class="shared-connection">
+        <lookup-name>jetty-conn</lookup-name>
+      </consume-connection>
+      <workflow-list>
+          <!-- HTTP request -> SQS Queue1 -->
+        <standard-workflow>
+            <consumer class="jetty-message-consumer">
+                <unique-id>jetty-consumer-aws2-sqs</unique-id>
+                <path>${api.path.aws2.sqs}/*</path>
+                <parameter-handler class="jetty-http-parameters-as-metadata"/>
+                <header-handler class="jetty-http-ignore-headers"/>
+                <message-factory class="default-message-factory">
+                    <default-char-encoding>UTF-8</default-char-encoding>
+                </message-factory>
+            </consumer>
+          <service-collection class="service-list">
+            <unique-id>eager-albattani</unique-id>
+            <services>
+                <standalone-producer>
+                    <unique-id>standard-http</unique-id>
+                    <connection class="shared-connection">
+                        <lookup-name>aws-sqs-sdk-connection-async</lookup-name>
+                    </connection>
+                    <producer class="aws2-amazon-sqs-producer">
+                        <unique-id>aws-sqs-producer</unique-id>
+                        <queue>${aws2.sqs.queue.1.url}</queue>
+                    </producer>
+                </standalone-producer>
+            </services>
+          </service-collection>
+          <unique-id>sqs-workflow-jetty-sqs-queue1</unique-id>
+        </standard-workflow>
+      </workflow-list>
+      <unique-id>aws-sqs-channel1</unique-id>
+    </channel>
+      <channel>
+          <consume-connection class="shared-connection">
+              <lookup-name>aws-sqs-sdk-connection-sync</lookup-name>
+          </consume-connection>
+          <workflow-list>
+              <!-- SQS Queue1 -> SQS Queue2 -->
+              <standard-workflow>
+                  <consumer class="aws2-amazon-sqs-consumer">
+                      <unique-id>aws-sqs-consumer-aws-sqs-producer</unique-id>
+                      <always-delete>false</always-delete>
+                      <queue>${aws2.sqs.queue.1.url}</queue>
+                      <poller class="fixed-interval-poller">
+                          <poll-interval class="time-interval">
+                              <interval>5</interval>
+                              <unit>SECONDS</unit>
+                          </poll-interval>
+                      </poller>
+                  </consumer>
+                  <service-collection class="service-list">
+                      <unique-id>eager-albattani</unique-id>
+                      <services>
+                          <standalone-producer>
+                              <unique-id>standard-http</unique-id>
+                              <connection class="shared-connection">
+                                  <lookup-name>aws-sqs-sdk-connection-async</lookup-name>
+                              </connection>
+                              <producer class="aws2-amazon-sqs-producer">
+                                  <unique-id>aws-sqs-producer</unique-id>
+                                  <queue>${aws2.sqs.queue.2.url}</queue>
+                              </producer>
+                          </standalone-producer>
+                      </services>
+                  </service-collection>
+                  <unique-id>sqs-workflow-sqs-queue1-sqs-queue2</unique-id>
+              </standard-workflow>
+          </workflow-list>
+          <unique-id>aws-sqs-channel2</unique-id>
+      </channel>
+  </channel-list>
+  <message-error-digester class="standard-message-error-digester">
+    <unique-id>ErrorDigest</unique-id>
+    <digest-max-size>100</digest-max-size>
+  </message-error-digester>
+</adapter>

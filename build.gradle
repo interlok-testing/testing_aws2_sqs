@@ -4,8 +4,8 @@ plugins {
 }
 
 ext {
-//    testingCommonGradle = "https://raw.githubusercontent.com/interlok-testing/testing_common/refs/heads/master/common.gradle?timestamp=${new Date().getTime()}"
-    testingCommonGradle = "../testing_common/common.gradle"
+    testingCommonGradle = "https://raw.githubusercontent.com/interlok-testing/testing_common/refs/heads/master/common.gradle?timestamp=${new Date().getTime()}"
+//    testingCommonGradle = "../testing_common/common.gradle"
     includeWar='true'
     restAssuredVersion = "5.5.0"
     awsSDKVersion = "2.29.9"
